@@ -12,12 +12,11 @@ export type GeoDataInfoType = {
   color?: string;
   name?: string;
   type?: GeoJsonTypes;
-  features: GeoJSON,
-  setVisible?: ()=>void;
+  features: GeoJSON;
+  setVisible?: () => void;
 };
 
-export interface GeoJsonObjectCustom extends FeatureCollection {
-}
+export interface GeoJsonObjectCustom extends FeatureCollection {}
 
 export type AllowGeometryTypes =
   | "MultiPoint"
@@ -25,6 +24,8 @@ export type AllowGeometryTypes =
   | "LineString"
   | "Polygon";
 
-
-
-  
+export enum AllowGeometry {
+  "MultiPoint" = "MultiPoint",
+  "LineString" = "LineString",
+  "Polygon" = "Polygon",
+}

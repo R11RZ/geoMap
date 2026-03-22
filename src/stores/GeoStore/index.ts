@@ -114,9 +114,13 @@ export const GeoStore = () => {
     });
   }
 
+  function clearFakeFeature() {
+    fakeFeature.set(undefined);
+  }
+
   function endFakeFeature() {
     addGeo(JSON.stringify(get(fakeFeature)));
-    fakeFeature.set(undefined);
+    clearFakeFeature();
   }
 
   function setFeatureColor(index: number, color: string) {
@@ -199,25 +203,27 @@ export const GeoStore = () => {
     if (!id) return;
     geo.update(($geo) => {
       const feature = mapFeature($geo, id);
+      console.log(feature)
       if (feature) {
         feature.properties = {
           ...feature.properties,
           ...props,
         };
       }
+            console.log(feature)
       return $geo;
     });
   }
 
-  function setVisible(id?: string) {
+  function setVisible(id?: string , visible?:boolean) {
     console.log(id);
     if (!id) return;
     console.log(id);
     geo.update((val) => {
       const feature = mapFeature(val, id);
       if (!feature) return val;
-      mapVisible(feature);
-      
+      mapVisible(feature , !!visible);
+
       return val;
     });
   }
@@ -247,6 +253,67 @@ export const GeoStore = () => {
       console.log(err);
     }
   });
+
+  function deleteFeatureById(featureId: string) {
+    geo.update((val) => {
+      if (!val?.features) return val;
+      val.features = val.features.filter((feature) => {
+        if (feature.id === featureId) return false;
+        if (feature.type === "FeatureCollection" && feature.features) {
+          feature.features = deleteFromCollection(feature.features, featureId);
+        }
+        return true;
+      });
+      return val;
+    });
+  }
+
+  function deleteFromCollection(
+    features: Feature[],
+    featureId: string,
+  ): Feature[] {
+    return features.filter((feature) => {
+      if (feature.id === featureId) return false;
+      if (feature.type === "FeatureCollection" && feature.features) {
+        feature.features = deleteFromCollection(feature.features, featureId);
+      }
+      return true;
+    });
+  }
+
+    function moveToCollection(featureId: string, collectionId: string) {
+      geo.update((val) => {
+        if (!val?.features) return val;
+
+        let featureToMove: Feature | undefined;
+
+        // Find and remove the feature
+        val.features = val.features.filter((feature) => {
+          if (feature.id === featureId) {
+            featureToMove = feature;
+            return false;
+          }
+          if (feature.type === "FeatureCollection" && feature.features) {
+            const result = deleteFromCollection(feature.features, featureId);
+            if (result.length < feature.features.length) {
+              featureToMove = feature.features.find(f => f.id === featureId);
+              feature.features = result;
+            }
+          }
+          return true;
+        });
+
+        // Move feature to target collection
+        if (featureToMove) {
+          const targetCollection = val.features.find(f => f.id === collectionId);
+          if (targetCollection && targetCollection.type === "FeatureCollection") {
+            targetCollection.features.push(featureToMove);
+          }
+        }
+
+        return val;
+      });
+    }
   return {
     geo,
     geoRaw,
@@ -266,5 +333,8 @@ export const GeoStore = () => {
     deleteGeometry,
     setFeatureProps,
     setVisible,
+    clearFakeFeature,
+    deleteFeatureById,
+    moveToCollection
   };
 };

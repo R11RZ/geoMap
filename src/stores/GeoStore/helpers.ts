@@ -54,24 +54,66 @@ export function newArrayGeometryCollection(
   return [...FeatureCollection.features, ...newFeatures];
 }
 
-export function mapVisible(feature: GeoJSON) {
+export function mapVisible(feature: GeoJSON, visible: boolean) {
   console.log(feature);
   if (feature.type === "Feature") {
-      console.log("feature" ,  feature.properties?.opacity !== 0.0 , feature.properties?.opacity);
+    console.log(
+      "feature",
+      feature.properties?.opacity !== 0.0,
+      feature.properties?.opacity,
+    );
     feature.properties = {
       ...(feature.properties ?? {}),
-      opacity: feature.properties?.opacity !== 0.0 ? 0.0 : 1.0,
-      fillOpacity: feature.properties?.fillOpacity !== 0.0 ? 0.0 : 0.2,
+      opacity: visible ? 0.0 : 1.0,
+      fillOpacity: visible ? 0.0 : 0.2,
+      notVisible: visible,
     };
     console.log(feature);
     return feature;
   }
   if (feature.type === "FeatureCollection") {
     if (!feature.features) feature.features = [];
-    feature.features = feature.features.map(mapVisible);
+    feature.features = feature.features.map((val)=>mapVisible(val , visible));
     console.log(feature);
     return feature;
   }
   console.log(feature);
   return feature;
+}
+
+export type LatLng = [number, number, number];
+
+const EARTH_RADIUS = 6371000;
+
+function toRad(deg: number): number {
+  return (deg * Math.PI) / 180;
+}
+
+function haversineDistance(a: LatLng, b: LatLng): number {
+  const dLat = toRad(b[1] - a[1]);
+  const dLng = toRad(b[0] - a[0]);
+
+  const lat1 = toRad(a[1]);
+  const lat2 = toRad(b[1]);
+
+  const sinLat = Math.sin(dLat / 2);
+  const sinLng = Math.sin(dLng / 2);
+
+  const h = sinLat * sinLat + Math.cos(lat1) * Math.cos(lat2) * sinLng * sinLng;
+
+  const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+
+  return EARTH_RADIUS * c;
+}
+
+export function getPathLength(points: LatLng[]): number {
+  if (points.length < 2) return 0;
+
+  let total = 0;
+
+  for (let i = 1; i < points.length; i++) {
+    total += haversineDistance(points[i - 1], points[i]);
+  }
+
+  return total; // в метрах
 }

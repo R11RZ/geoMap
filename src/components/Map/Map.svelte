@@ -74,6 +74,7 @@
       ...feature.properties,
     };
   }
+  console.log('visib' , geo?.features.filter((val)=>!val.properties.notVisible ) )
 </script>
 
 <div id="map" bind:this={mapElement} class="map-wrapper">

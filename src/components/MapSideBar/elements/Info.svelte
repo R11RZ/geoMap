@@ -1,27 +1,39 @@
 <script lang="ts">
   import Input from "@/components/ui/input/input.svelte";
   import type { GeoDataInfoType } from "../../../stores/GeoStore/types";
-  import { IconEye, IconXFilled } from "@tabler/icons-svelte";
+  import { IconDotsVertical, IconEye, IconXFilled } from "@tabler/icons-svelte";
   import Button from "@/components/ui/button/button.svelte";
   import Info from "./Info.svelte";
   import type { Feature, FeatureCollection } from "geojson";
+  import PopMove from "./PopMove.svelte";
 
   type Props = {
     feature: Feature | FeatureCollection;
+    collectionName: ([string, string] | undefined)[];
 
-    setFeatureColor: (color: string) => void;
-    setFeatureName: (name: string) => void;
-    deleteFeature: () => void;
-    setVisible: () => void;
+    setVisible: (id?: string | undefined, visible?: boolean) => void;
+    deleteFeatureById: (featureId: string) => void;
+    moveToCollection: (featureId: string, collectionId: string) => void;
+    setFeatureProps: (id?: string, props?: Record<string, any>) => void;
   };
 
   let {
-    setFeatureColor,
-    setFeatureName,
-    deleteFeature,
     feature,
     setVisible,
+    deleteFeatureById,
+    moveToCollection,
+    collectionName,
+    setFeatureProps,
   }: Props = $props();
+
+  function clearedCollectionName() {
+    return collectionName.filter((val) => val !== undefined) as [
+      string,
+      string,
+    ][];
+  }
+
+  let isVisble = $state(true);
 </script>
 
 <div class="collection-wrapper">
@@ -30,7 +42,8 @@
       <Button
         variant="outline"
         onclick={() => {
-          setVisible();
+          setVisible(feature?.id, isVisble);
+          isVisble = !isVisble;
         }}
       >
         <IconEye />
@@ -41,7 +54,9 @@
         class="color-input"
         value={feature?.properties?.color}
         onchange={(val) => {
-          setFeatureColor((val.target as HTMLInputElement)?.value);
+          setFeatureProps(feature?.id, {
+            color: (val.target as HTMLInputElement)?.value,
+          });
         }}
       />
     {/if}
@@ -49,13 +64,29 @@
       <input
         value={feature?.properties?.name ?? ""}
         onchange={(val) => {
-          setFeatureName((val.target as HTMLInputElement)?.value);
+          console.log(feature?.id , feature)
+          setFeatureProps(feature?.id, {
+            name: (val.target as HTMLInputElement)?.value,
+          });
         }}
       />
     </div>
     <div>
+    {#key collectionName.length  }
+            {#if feature.type !== "FeatureCollection"}
+        <PopMove
+          id={feature?.id}
+          collection={clearedCollectionName()}
+          {moveToCollection}
+        />
+      {/if}
+    {/key}
+
+    </div>
+
+    <div>
       <IconXFilled
-        onclick={deleteFeature}
+        onclick={() => deleteFeatureById(feature?.id)}
         size={15}
         color={"var(--color-gray-400)"}
       />
@@ -64,9 +95,16 @@
   {#if feature.type === "FeatureCollection"}
     <div class="divider-wrapper">
       <div class="divider"></div>
-      <div class='flex-col w-full'>
+      <div class="flex-col w-full">
         {#each feature.features as feat}
-          <Info feature={feat} />
+          <Info
+            collectionName={clearedCollectionName()}
+            feature={feat}
+            {deleteFeatureById}
+            {moveToCollection}
+            {setFeatureProps}
+            {setVisible}
+          />
         {/each}
       </div>
     </div>
@@ -76,7 +114,7 @@
 <style>
   .wapper {
     display: grid;
-    grid-template-columns: 40px 1fr 40px;
+    grid-template-columns: 40px 1fr 40px 40px;
 
     border-bottom-color: var(--color-gray-200);
     border-bottom-width: 1px;

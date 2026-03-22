@@ -21,7 +21,10 @@
     downloadGeoAsJson,
     deleteGeometry,
     setFeatureProps,
-    setVisible
+    setVisible,
+    clearFakeFeature,
+    deleteFeatureById,
+    moveToCollection,
   } = GeoStore();
 
   let isSideHide = $state(true);
@@ -48,6 +51,9 @@
             {deleteGeometry}
             {setFeatureProps}
             {setVisible}
+            {clearFakeFeature}
+            {deleteFeatureById}
+            {moveToCollection}
             fakeFeature={$fakeFeature}
           />
         </div>
@@ -65,7 +71,12 @@
     </div>
 
     <div class="right">
-      <Map {currentTileMap} geo={$geo} {onMapClick} fakeFeature={$fakeFeature} />
+      <Map
+        {currentTileMap}
+        geo={$geo}
+        {onMapClick}
+        fakeFeature={$fakeFeature}
+      />
     </div>
   </div>
 </div>
