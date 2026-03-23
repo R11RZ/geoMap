@@ -113,7 +113,7 @@ export class BigImageControl extends Control {
                 id: 'format'
             });
 
-            const formats = ['png', 'jpeg', 'webp'];
+            const formats = ['jpeg', 'webp', 'png', ];
             formats.forEach(format => {
                 const option = this._createElement('option', {
                     value: format,

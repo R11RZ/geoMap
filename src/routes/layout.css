@@ -177,3 +177,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+
+#print-btn{
+  width: 100%;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#print-btn.bigimage-unicode-icon-disable{
+display: none;
+}
+#print-params .close{
+  text-align: right;
+  font-size: medium;
+
+}
+
+
+#print-params .download-button{
+  text-align: center;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
+    margin: 0.5rem;
+}

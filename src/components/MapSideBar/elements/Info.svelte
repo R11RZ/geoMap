@@ -160,7 +160,7 @@
     visibility: hidden !important;
   }
   .divider {
-    width: 3px;
+    width: 10px;
     border-left: 1px solid var(--color-gray-600);
     height: 100%;
   }

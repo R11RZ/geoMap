@@ -10,7 +10,7 @@
   };
 
   const { collection, moveToCollection, id }: Props = $props();
-  console.log(collection)
+  console.log(collection);
 </script>
 
 <Root>
@@ -19,14 +19,18 @@
   </Trigger>
   <Content style="z-index: 5000;">
     <div class="flex-col gap-4">
-      {#each collection as features}
-        <Button
-          class="w-full"
-          variant="secondary"
-          onclick={() => moveToCollection(id, features[0])}
-          >{features[1]}</Button
-        >
-      {/each}
+      {#if collection.length}
+        {#each collection as features}
+          <Button
+            class="w-full"
+            variant="secondary"
+            onclick={() => moveToCollection(id, features[0])}
+            >{features[1]}</Button
+          >
+        {/each}
+        {:else}
+        <div class="text-center">Группы отсутствуют</div>
+      {/if}
     </div>
   </Content>
 </Root>
