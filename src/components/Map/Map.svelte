@@ -15,11 +15,11 @@
     LayerGroup,
     Control,
   } from "sveaflet";
-    import type {
+  import type {
     LeafletMouseEvent,
     Map as leaMap,
-    StyleFunction
-  } from "leaflet";;
+    StyleFunction,
+  } from "leaflet";
   import type { Writable } from "svelte/store";
   import type {
     AllowGeometryTypes,
@@ -74,7 +74,6 @@
       ...feature.properties,
     };
   }
-  console.log('visib' , geo?.features.filter((val)=>!val.properties.notVisible ) )
 </script>
 
 <div id="map" bind:this={mapElement} class="map-wrapper">

@@ -54,30 +54,19 @@ export function newArrayGeometryCollection(
   return [...FeatureCollection.features, ...newFeatures];
 }
 
-export function mapVisible(feature: GeoJSON, visible: boolean) {
-  console.log(feature);
+export function mapVisible(feature: GeoJSON) {
   if (feature.type === "Feature") {
-    console.log(
-      "feature",
-      feature.properties?.opacity !== 0.0,
-      feature.properties?.opacity,
-    );
     feature.properties = {
       ...(feature.properties ?? {}),
-      opacity: visible ? 0.0 : 1.0,
-      fillOpacity: visible ? 0.0 : 0.2,
-      notVisible: visible,
+      notVisible: feature.properties?.notVisible ? false : true,
     };
-    console.log(feature);
     return feature;
   }
   if (feature.type === "FeatureCollection") {
     if (!feature.features) feature.features = [];
-    feature.features = feature.features.map((val)=>mapVisible(val , visible));
-    console.log(feature);
+    feature.features = feature.features.map((val)=>mapVisible(val));
     return feature;
   }
-  console.log(feature);
   return feature;
 }
 

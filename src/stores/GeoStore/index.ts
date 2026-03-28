@@ -154,7 +154,6 @@ export const GeoStore = () => {
   }
 
   function deleteGeometry(index: number) {
-    console.log(index);
     geo.update((geo) => {
       if (!geo?.features[index]) return geo;
       geo.features = geo?.features.filter((_val, idx) => index !== idx);
@@ -191,10 +190,13 @@ export const GeoStore = () => {
 
     for (let index = 0; index < features.features.length; index++) {
       const feature = features.features[index];
+
       if (feature.id === id) return feature;
       if (feature.type === "FeatureCollection") {
         const temp_feature = mapFeature(feature, id);
-        return temp_feature?.id === id ? temp_feature : undefined;
+        if (temp_feature?.id === id) {
+          return temp_feature;
+        }
       }
     }
   }
@@ -203,26 +205,24 @@ export const GeoStore = () => {
     if (!id) return;
     geo.update(($geo) => {
       const feature = mapFeature($geo, id);
-      console.log(feature)
       if (feature) {
         feature.properties = {
           ...feature.properties,
           ...props,
         };
       }
-            console.log(feature)
       return $geo;
     });
   }
 
-  function setVisible(id?: string , visible?:boolean) {
-    console.log(id);
+  function setVisible(id?: string, visible?: boolean) {
     if (!id) return;
-    console.log(id);
+
     geo.update((val) => {
       const feature = mapFeature(val, id);
+
       if (!feature) return val;
-      mapVisible(feature , !!visible);
+      mapVisible(feature);
 
       return val;
     });
@@ -236,7 +236,7 @@ export const GeoStore = () => {
         name: val?.properties?.name ?? index,
         features: val,
       }));
-      console.log(geoInfoRaw);
+
       geoInfo.set(geoInfoRaw);
       geoRaw.set(JSON.stringify($geo, undefined, 2));
     }
@@ -244,7 +244,7 @@ export const GeoStore = () => {
 
   geoRaw.subscribe((value) => {
     if (!value) return;
-    console.log(value);
+
     try {
       const json = JSON.parse(value);
       geo.set(json);
@@ -281,39 +281,42 @@ export const GeoStore = () => {
     });
   }
 
-    function moveToCollection(featureId: string, collectionId: string) {
-      geo.update((val) => {
-        if (!val?.features) return val;
+  function moveToCollection(featureId: string, collectionId: string) {
 
-        let featureToMove: Feature | undefined;
+    geo.update((val) => {
+      if (!val?.features) return val;
 
-        // Find and remove the feature
-        val.features = val.features.filter((feature) => {
-          if (feature.id === featureId) {
-            featureToMove = feature;
-            return false;
-          }
-          if (feature.type === "FeatureCollection" && feature.features) {
-            const result = deleteFromCollection(feature.features, featureId);
-            if (result.length < feature.features.length) {
-              featureToMove = feature.features.find(f => f.id === featureId);
-              feature.features = result;
-            }
-          }
-          return true;
-        });
+      let featureToMove: Feature | undefined;
 
-        // Move feature to target collection
-        if (featureToMove) {
-          const targetCollection = val.features.find(f => f.id === collectionId);
-          if (targetCollection && targetCollection.type === "FeatureCollection") {
-            targetCollection.features.push(featureToMove);
+      // Find and remove the feature
+      val.features = val.features.filter((feature) => {
+        if (feature.id === featureId) {
+          featureToMove = feature;
+          return false;
+        }
+        if (feature.type === "FeatureCollection" && feature.features) {
+          const result = deleteFromCollection(feature.features, featureId);
+          if (result.length < feature.features.length) {
+            featureToMove = feature.features.find((f) => f.id === featureId);
+            feature.features = result;
           }
         }
-
-        return val;
+        return true;
       });
-    }
+
+      // Move feature to target collection
+      if (featureToMove) {
+        const targetCollection = val.features.find(
+          (f) => f.id === collectionId,
+        );
+        if (targetCollection && targetCollection.type === "FeatureCollection") {
+          targetCollection.features.push(featureToMove);
+        }
+      }
+
+      return val;
+    });
+  }
   return {
     geo,
     geoRaw,
@@ -335,6 +338,6 @@ export const GeoStore = () => {
     setVisible,
     clearFakeFeature,
     deleteFeatureById,
-    moveToCollection
+    moveToCollection,
   };
 };

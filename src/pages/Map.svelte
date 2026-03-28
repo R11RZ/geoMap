@@ -4,6 +4,7 @@
   import MapSideBar from "../components/MapSideBar/MapSideBar.svelte";
   import { GeoStore } from "../stores/GeoStore";
   import { IconChevronRight } from "@tabler/icons-svelte";
+  import { FeatureCollection } from "geojson";
   let {
     geo,
     geoRaw,
@@ -29,6 +30,21 @@
 
   let isSideHide = $state(true);
   navigator.mediaDevices.getDisplayMedia({});
+
+  function filterObject(obj: FeatureCollection) {
+    if (!obj?.features) return [];
+    const tempObj = structuredClone(obj)
+    tempObj.features = tempObj?.features.filter((val) => !val?.properties?.notVisible);
+    for (let index = 0; index < tempObj?.features?.length; index++) {
+      const element = tempObj?.features[index];
+      if (element?.features) {
+        element.features = element?.features.filter(
+          (val) => !val?.properties?.notVisible,
+        );
+      }
+    }
+    return tempObj.features;
+  }
 </script>
 
 <div class="wrapper">
@@ -73,7 +89,10 @@
     <div class="right">
       <Map
         {currentTileMap}
-        geo={$geo}
+        geo={{
+          type: "FeatureCollection",
+          features: filterObject($geo),
+        } as FeatureCollection}
         {onMapClick}
         fakeFeature={$fakeFeature}
       />

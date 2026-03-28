@@ -10,7 +10,6 @@
   };
 
   const { collection, moveToCollection, id }: Props = $props();
-  console.log(collection);
 </script>
 
 <Root>

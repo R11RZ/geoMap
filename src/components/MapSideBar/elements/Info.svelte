@@ -64,7 +64,6 @@
       <input
         value={feature?.properties?.name ?? ""}
         onchange={(val) => {
-          console.log(feature?.id , feature)
           setFeatureProps(feature?.id, {
             name: (val.target as HTMLInputElement)?.value,
           });

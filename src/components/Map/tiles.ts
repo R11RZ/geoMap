@@ -9,12 +9,12 @@ export type Tiles = {
 export const BASE_MAP_TILE: Tiles[] = [
   {
     url: "https://tile.openstreetmap.bzh/ca/{z}/{x}/{y}.png",
-    name: "Минималистичный",
+    name: "Минималистичная",
     img: TileMiniImg,
   },
   {
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-    name: "Топология",
+    name: "Топографическая",
     img: TileTopoImg,
   },
   {
@@ -24,7 +24,7 @@ export const BASE_MAP_TILE: Tiles[] = [
   },
 
   {
-    url: "https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}{r}.png",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
     name: "Спутник",
     img: TileSpaceImg,
   },
