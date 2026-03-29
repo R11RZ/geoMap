@@ -82,7 +82,8 @@
     const file = event.target?.files?.[0] as File;
     if (!file) return;
     try {
-      const text = await file.text();
+      const buffer = await file.arrayBuffer();
+      const text = new TextDecoder('utf-8').decode(buffer)
       loadGeometryJSON(text);
     } catch (err) {
       console.error(err);

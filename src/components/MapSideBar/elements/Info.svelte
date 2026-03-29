@@ -1,11 +1,19 @@
 <script lang="ts">
   import Input from "@/components/ui/input/input.svelte";
   import type { GeoDataInfoType } from "../../../stores/GeoStore/types";
-  import { IconDotsVertical, IconEye, IconXFilled } from "@tabler/icons-svelte";
+  import {
+    IconArrowDown,
+    IconArrowUp,
+    IconDotsVertical,
+    IconEye,
+    IconEyeClosed,
+    IconXFilled,
+  } from "@tabler/icons-svelte";
   import Button from "@/components/ui/button/button.svelte";
   import Info from "./Info.svelte";
   import type { Feature, FeatureCollection } from "geojson";
   import PopMove from "./PopMove.svelte";
+  import { slide } from "svelte/transition";
 
   type Props = {
     feature: Feature | FeatureCollection;
@@ -33,7 +41,8 @@
     ][];
   }
 
-  let isVisble = $state(true);
+  let isVisble = $state(!feature?.properties?.notVisible);
+  let showCollection = $state(true);
 </script>
 
 <div class="collection-wrapper">
@@ -46,7 +55,11 @@
           isVisble = !isVisble;
         }}
       >
-        <IconEye />
+        {#if isVisble}
+          <IconEye />
+        {:else}
+          <IconEyeClosed />
+        {/if}
       </Button>
     {:else}
       <Input
@@ -71,16 +84,15 @@
       />
     </div>
     <div>
-    {#key collectionName.length  }
-            {#if feature.type !== "FeatureCollection"}
-        <PopMove
-          id={feature?.id}
-          collection={clearedCollectionName()}
-          {moveToCollection}
-        />
-      {/if}
-    {/key}
-
+      {#key collectionName.length}
+        {#if feature.type !== "FeatureCollection"}
+          <PopMove
+            id={feature?.id}
+            collection={clearedCollectionName()}
+            {moveToCollection}
+          />
+        {/if}
+      {/key}
     </div>
 
     <div>
@@ -92,21 +104,36 @@
     </div>
   </div>
   {#if feature.type === "FeatureCollection"}
-    <div class="divider-wrapper">
-      <div class="divider"></div>
-      <div class="flex-col w-full">
-        {#each feature.features as feat}
-          <Info
-            collectionName={clearedCollectionName()}
-            feature={feat}
-            {deleteFeatureById}
-            {moveToCollection}
-            {setFeatureProps}
-            {setVisible}
-          />
-        {/each}
+    <Button
+      variant="outline"
+      class=" h-5 w-full rounded-tl-none rounded-tr-none {showCollection
+        ? 'w-full rounded-bl-none rounded-br-none'
+        : ''}"
+      onclick={() => (showCollection = !showCollection)}
+    >
+      {#if showCollection}
+        <IconArrowUp />
+      {:else}
+        <IconArrowDown />
+      {/if}
+    </Button>
+    {#if showCollection}
+      <div transition:slide class="divider-wrapper">
+        <div class="divider"></div>
+        <div class="flex-col w-full">
+          {#each feature.features as feat}
+            <Info
+              collectionName={clearedCollectionName()}
+              feature={feat}
+              {deleteFeatureById}
+              {moveToCollection}
+              {setFeatureProps}
+              {setVisible}
+            />
+          {/each}
+        </div>
       </div>
-    </div>
+    {/if}
   {/if}
 </div>
 
@@ -160,7 +187,7 @@
   }
   .divider {
     width: 10px;
-    border-left: 1px solid var(--color-gray-600);
+    border-left: 1px solid var(--color-gray-200);
     height: 100%;
   }
   .divider-wrapper {

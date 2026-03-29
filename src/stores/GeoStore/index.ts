@@ -31,7 +31,7 @@ export const GeoStore = () => {
   const geoRaw = writable<string>(``);
   const currentTileMap = writable<Tiles>(BASE_MAP_TILE[0]);
 
-  function addGeo(rawNewGeo: string) {
+  function addGeo(rawNewGeo: string, force?: boolean) {
     try {
       const newGeo = JSON.parse(rawNewGeo) as GeoJSON;
 
@@ -47,11 +47,20 @@ export const GeoStore = () => {
           case "FeatureCollection":
             newGeo as FeatureCollection;
             newGeo.id = v4();
+            if (force) {
+              $geo.features = [
+                ...$geo?.features,
+                ...(newGeo.features.map(setProps) ?? []),
+              ];
+              break;
+            }
+            newGeo.features = newGeo.features.map(setProps);
             $geo.features = [...$geo?.features, newGeo];
             break;
           case "Feature":
             newGeo as Feature;
             setProps(newGeo);
+                        if(!newGeo.geometry.coordinates.length) return
             $geo.features = [...$geo?.features, newGeo];
             break;
           case "GeometryCollection":
@@ -60,6 +69,7 @@ export const GeoStore = () => {
             break;
           default:
             newGeo as Geometry;
+            if(!newGeo.coordinates.length) return
             $geo.features = newArrayGeometry($geo, newGeo);
             break;
         }
@@ -162,7 +172,7 @@ export const GeoStore = () => {
   }
 
   function loadGeometryJSON(json: string) {
-    geoRaw.set(json);
+    addGeo(json , true);
   }
 
   function downloadGeoAsJson() {
@@ -247,6 +257,7 @@ export const GeoStore = () => {
 
     try {
       const json = JSON.parse(value);
+
       geo.set(json);
     } catch (err) {
       geo.set(undefined);
@@ -282,7 +293,6 @@ export const GeoStore = () => {
   }
 
   function moveToCollection(featureId: string, collectionId: string) {
-
     geo.update((val) => {
       if (!val?.features) return val;
 
