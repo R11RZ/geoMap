@@ -29,7 +29,6 @@
   } = GeoStore();
 
   let isSideHide = $state(true);
-  navigator.mediaDevices.getDisplayMedia({});
 
   function filterObject(obj: FeatureCollection) {
     if (!obj?.features) return [];
