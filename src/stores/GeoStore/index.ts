@@ -22,7 +22,8 @@ import {
 } from "./helpers";
 import type { LeafletMouseEvent } from "leaflet";
 import { BASE_MAP_TILE, type Tiles } from "../../components/Map/tiles";
-import { v4 } from "uuid";
+import { v4 as uuid } from "uuid";
+import type { GeoList } from "../GeoStoreV2/types";
 
 export const GeoStore = () => {
   const geo = writable<GeoJsonObjectCustom | undefined>();
@@ -30,6 +31,7 @@ export const GeoStore = () => {
   const fakeFeature = writable<Feature | undefined>(undefined);
   const geoRaw = writable<string>(``);
   const currentTileMap = writable<Tiles>(BASE_MAP_TILE[0]);
+    const geoList = writable<GeoList[]>([]);
 
   function addGeo(rawNewGeo: string, force?: boolean) {
     try {
@@ -46,7 +48,7 @@ export const GeoStore = () => {
         switch (newGeo.type) {
           case "FeatureCollection":
             newGeo as FeatureCollection;
-            newGeo.id = v4();
+            newGeo.id = uuid();
             if (force) {
               $geo.features = [
                 ...$geo?.features,
@@ -60,7 +62,7 @@ export const GeoStore = () => {
           case "Feature":
             newGeo as Feature;
             setProps(newGeo);
-                        if(!newGeo.geometry.coordinates.length) return
+            if (!newGeo.geometry.coordinates.length) return;
             $geo.features = [...$geo?.features, newGeo];
             break;
           case "GeometryCollection":
@@ -69,7 +71,7 @@ export const GeoStore = () => {
             break;
           default:
             newGeo as Geometry;
-            if(!newGeo.coordinates.length) return
+            if (!newGeo.coordinates.length) return;
             $geo.features = newArrayGeometry($geo, newGeo);
             break;
         }
@@ -119,7 +121,9 @@ export const GeoStore = () => {
     fakeFeature.set({
       type: "Feature",
       geometry: { type, coordinates: [] },
-      properties: {},
+      properties: {
+        color: "#000000",
+      },
       id: v4(),
     });
   }
@@ -129,6 +133,12 @@ export const GeoStore = () => {
   }
 
   function endFakeFeature() {
+    console.log(get(fakeFeature));
+    const feature = get(fakeFeature);
+    if (!feature?.geometry?.coordinates?.length) {
+      clearFakeFeature();
+      return;
+    }
     addGeo(JSON.stringify(get(fakeFeature)));
     clearFakeFeature();
   }
@@ -172,7 +182,7 @@ export const GeoStore = () => {
   }
 
   function loadGeometryJSON(json: string) {
-    addGeo(json , true);
+    addGeo(json, true);
   }
 
   function downloadGeoAsJson() {

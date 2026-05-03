@@ -51,14 +51,18 @@
   }: Props = $props();
 
   let map: leaMap | undefined = $state();
+  let baseScaleFactor: number = $state(1);
+
 
   let mapElement = $state<HTMLElement>();
 
   let isListenerSet = false;
 
   $effect(() => {
+    console.log(map?.getZoom());
     if (map && !isListenerSet) {
       map.on("click", onMapClick);
+      map.on("zoom", scaleFactor);
       map?.addControl(
         new BigImageControl({
           position: "topright",
@@ -69,6 +73,13 @@
     }
   });
 
+  function scaleFactor() {
+    const zoom = map?.getZoom();
+    if(!zoom) return;
+    baseScaleFactor = zoom / startMapZoom;
+
+  }
+
   function style(feature: Feature) {
     return {
       ...feature.properties,
@@ -78,6 +89,7 @@
 
 <div id="map" bind:this={mapElement} class="map-wrapper">
   <Map
+    --scaleFactor={baseScaleFactor}
     options={{
       center: startMapCoords,
       zoom: startMapZoom,
@@ -111,6 +123,20 @@
   :global(.leaflet-control-attribution) {
     visibility: hidden;
   }
+  :global(.leaflet-marker-icon ) {
+    margin-top:  calc(var(--scaleFactor, 1) * -41px) !important;
+    margin-left:  calc(var(--scaleFactor, 1) * -12px) !important;
+    width: calc(var(--scaleFactor, 1) * 25px) !important;
+    height: calc(var(--scaleFactor, 1) * 41px) !important;
+  }
+  :global(.leaflet-marker-shadow) {
+    margin-top:  calc(var(--scaleFactor, 1) * -41px) !important;
+    margin-left:  calc(var(--scaleFactor, 1) * -12px) !important;
+    width:calc(var(--scaleFactor, 1) * 41px) !important;
+    height: calc(var(--scaleFactor, 1) * 41px) !important;
+  }
+
+  
   .control-draw {
     background-color: var(--color-background);
     height: 35px;
